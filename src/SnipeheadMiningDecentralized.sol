@@ -20,8 +20,8 @@ contract SnipeheadMiningDecentralized is ReentrancyGuard {
     IERC20Permit public constant shdTokenPermit = IERC20Permit(0xa1e1a6cB1F694e41a5C270542dF233673665FCd5);
 
     struct UserInfo {
-        uint256 minedAmount;  // Amount of SHD currently mined by user
-        uint256 rewardDebt;   // Used to calculate pending rewards correctly
+        uint256 minedAmount; // Amount of SHD currently mined by user
+        uint256 rewardDebt; // Used to calculate pending rewards correctly
     }
 
     uint256 public immutable rewardRate = 31771820820; // Fixed forever
@@ -67,9 +67,7 @@ contract SnipeheadMiningDecentralized is ReentrancyGuard {
         uint256 theoreticalReward = (blocks * rewardRate * totalMined) / 1e18;
 
         // Cap accrual to whatever reward tokens are actually available.
-        uint256 actualReward = theoreticalReward > rewardReserve
-            ? rewardReserve
-            : theoreticalReward;
+        uint256 actualReward = theoreticalReward > rewardReserve ? rewardReserve : theoreticalReward;
 
         if (actualReward > 0) {
             // Round the same way accRewardPerShare does, THEN only pull that
@@ -95,9 +93,7 @@ contract SnipeheadMiningDecentralized is ReentrancyGuard {
             uint256 blocks = block.number - lastRewardBlock;
             uint256 theoreticalReward = (blocks * rewardRate * totalMined) / 1e18;
 
-            uint256 actualReward = theoreticalReward > rewardReserve
-                ? rewardReserve
-                : theoreticalReward;
+            uint256 actualReward = theoreticalReward > rewardReserve ? rewardReserve : theoreticalReward;
 
             if (actualReward > 0) {
                 acc += (actualReward * 1e18) / totalMined;
@@ -115,13 +111,10 @@ contract SnipeheadMiningDecentralized is ReentrancyGuard {
     // ── Fund the reward pool using an EIP-2612 permit signature ──────────────
     // Lets the depositor skip a separate approve() transaction: they sign a
     // permit off-chain and this function submits it, then pulls the tokens.
-    function depositWithPermit(
-        uint256 _amount,
-        uint256 _deadline,
-        uint8 _v,
-        bytes32 _r,
-        bytes32 _s
-    ) external nonReentrant {
+    function depositWithPermit(uint256 _amount, uint256 _deadline, uint8 _v, bytes32 _r, bytes32 _s)
+        external
+        nonReentrant
+    {
         // A signed permit is visible in the mempool before this tx lands, so
         // anyone can front-run it by calling permit() on the token directly
         // with the same (v, r, s). That's harmless (it just sets the
@@ -157,13 +150,10 @@ contract SnipeheadMiningDecentralized is ReentrancyGuard {
     // ── Mine SHD tokens using an EIP-2612 permit signature ────────────────────
     // Lets the miner skip a separate approve() transaction: they sign a
     // permit off-chain and this function submits it, then pulls the tokens.
-    function mineWithPermit(
-        uint256 _amount,
-        uint256 _deadline,
-        uint8 _v,
-        bytes32 _r,
-        bytes32 _s
-    ) external nonReentrant {
+    function mineWithPermit(uint256 _amount, uint256 _deadline, uint8 _v, bytes32 _r, bytes32 _s)
+        external
+        nonReentrant
+    {
         // See depositWithPermit: front-running the permit signature is
         // harmless but must not be allowed to grief/revert this tx.
         try shdTokenPermit.permit(msg.sender, address(this), _amount, _deadline, _v, _r, _s) {} catch {}

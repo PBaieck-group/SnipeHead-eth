@@ -27,7 +27,7 @@ contract SnipeHeadNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC2981, Ow
     // Price of each NFT (0.0405639 ETH)
     uint256 public mintPrice = 0.05 ether;
 
-    // Public sale is on by default 
+    // Public sale is on by default
     bool public mintingActive = true;
 
     uint256 private _nextTokenId = 1;
@@ -120,7 +120,7 @@ contract SnipeHeadNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC2981, Ow
     function withdraw() external onlyOwner nonReentrant {
         uint256 balance = address(this).balance;
         require(balance > 0, "Nothing to withdraw");
-        (bool success, ) = payable(owner()).call{value: balance}("");
+        (bool success,) = payable(owner()).call{value: balance}("");
         require(success, "Withdraw failed");
 
         emit Withdrawn(owner(), balance);
@@ -132,12 +132,7 @@ contract SnipeHeadNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC2981, Ow
         return string.concat("ipfs://", METADATA_CID, "/");
     }
 
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
+    function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         _requireOwned(tokenId);
         return string.concat(_baseURI(), _paddedId(tokenId), ".json");
     }
@@ -163,10 +158,7 @@ contract SnipeHeadNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC2981, Ow
         return super._update(to, tokenId, auth);
     }
 
-    function _increaseBalance(address account, uint128 value)
-        internal
-        override(ERC721, ERC721Enumerable)
-    {
+    function _increaseBalance(address account, uint128 value) internal override(ERC721, ERC721Enumerable) {
         super._increaseBalance(account, value);
     }
 

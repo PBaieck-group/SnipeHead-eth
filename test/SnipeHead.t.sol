@@ -10,8 +10,8 @@ contract SnipeHeadTest is Test {
 
     address public owner = makeAddr("owner");
     address public alice = makeAddr("alice");
-    address public bob   = makeAddr("bob");
-    address public zero  = address(0);
+    address public bob = makeAddr("bob");
+    address public zero = address(0);
 
     uint256 public constant TOTAL_SUPPLY = 1_000_000_000 * 1e18;
 
@@ -186,7 +186,8 @@ contract SnipeHeadTest is Test {
         token.transfer(signer, 10_000 ether);
 
         // Sign with wrong nonce
-        (uint8 v, bytes32 r, bytes32 s) = _signPermit(privateKey, signer, alice, 1_000 ether, 99, block.timestamp + 1 hours);
+        (uint8 v, bytes32 r, bytes32 s) =
+            _signPermit(privateKey, signer, alice, 1_000 ether, 99, block.timestamp + 1 hours);
 
         vm.expectRevert();
         token.permit(signer, alice, 1_000 ether, block.timestamp + 1 hours, v, r, s);
@@ -269,9 +270,7 @@ contract SnipeHeadTest is Test {
             )
         );
 
-        bytes32 digest = keccak256(
-            abi.encodePacked("\x19\x01", token.DOMAIN_SEPARATOR(), structHash)
-        );
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", token.DOMAIN_SEPARATOR(), structHash));
 
         return vm.sign(privateKey, digest);
     }

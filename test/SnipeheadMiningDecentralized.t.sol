@@ -15,9 +15,9 @@ contract MockSHD is IERC20, IERC20Permit {
     mapping(address => uint256) public override nonces;
     uint256 public totalSupply;
 
-    string public constant name     = "SnipeHead";
-    string public constant symbol   = "SHD";
-    uint8  public constant decimals = 18;
+    string public constant name = "SnipeHead";
+    string public constant symbol = "SHD";
+    uint8 public constant decimals = 18;
 
     bytes32 public constant DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
@@ -26,30 +26,17 @@ contract MockSHD is IERC20, IERC20Permit {
 
     function DOMAIN_SEPARATOR() public view override returns (bytes32) {
         return keccak256(
-            abi.encode(
-                DOMAIN_TYPEHASH,
-                keccak256(bytes(name)),
-                keccak256(bytes("1")),
-                block.chainid,
-                address(this)
-            )
+            abi.encode(DOMAIN_TYPEHASH, keccak256(bytes(name)), keccak256(bytes("1")), block.chainid, address(this))
         );
     }
 
-    function permit(
-        address owner,
-        address spender,
-        uint256 value,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external override {
+    function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+        external
+        override
+    {
         require(block.timestamp <= deadline, "PERMIT_DEADLINE_EXPIRED");
 
-        bytes32 structHash = keccak256(
-            abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner]++, deadline)
-        );
+        bytes32 structHash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner]++, deadline));
 
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR(), structHash));
         address recovered = ecrecover(digest, v, r, s);
@@ -73,7 +60,9 @@ contract MockSHD is IERC20, IERC20Permit {
         uint256 cur = allowance[from][msg.sender];
         if (cur != type(uint256).max) {
             require(cur >= value, "ERC20: insufficient allowance");
-            unchecked { allowance[from][msg.sender] -= value; }
+            unchecked {
+                allowance[from][msg.sender] -= value;
+            }
         }
         require(balanceOf[from] >= value, "ERC20: transfer amount exceeds balance");
         unchecked {
@@ -101,22 +90,21 @@ contract MockSHD is IERC20, IERC20Permit {
 // Test suite
 // ============================================================
 contract SnipeheadMiningDecentralizedTest is Test {
-
     // ── Constants ────────────────────────────────────────────
     address public constant HARDCODED_SHD = 0xa1e1a6cB1F694e41a5C270542dF233673665FCd5;
-    uint256 public constant REWARD_RATE   = 31_771_820_820;
-    uint256 public constant RESERVE_SEED  = 500_000_000 ether;
+    uint256 public constant REWARD_RATE = 31_771_820_820;
+    uint256 public constant RESERVE_SEED = 500_000_000 ether;
 
-    uint256 public constant AMOUNT_1K     = 1_000 ether;
-    uint256 public constant AMOUNT_10K    = 10_000 ether;
-    uint256 public constant AMOUNT_50K    = 50_000 ether;
-    uint256 public constant AMOUNT_100K   = 100_000 ether;
-    uint256 public constant AMOUNT_1M     = 1_000_000 ether;
-    uint256 public constant AMOUNT_10M    = 10_000_000 ether;
-    uint256 public constant AMOUNT_50M    = 50_000_000 ether;
-    uint256 public constant AMOUNT_100M   = 100_000_000 ether;
-    uint256 public constant AMOUNT_200M   = 200_000_000 ether;
-    uint256 public constant AMOUNT_500M   = 500_000_000 ether;
+    uint256 public constant AMOUNT_1K = 1_000 ether;
+    uint256 public constant AMOUNT_10K = 10_000 ether;
+    uint256 public constant AMOUNT_50K = 50_000 ether;
+    uint256 public constant AMOUNT_100K = 100_000 ether;
+    uint256 public constant AMOUNT_1M = 1_000_000 ether;
+    uint256 public constant AMOUNT_10M = 10_000_000 ether;
+    uint256 public constant AMOUNT_50M = 50_000_000 ether;
+    uint256 public constant AMOUNT_100M = 100_000_000 ether;
+    uint256 public constant AMOUNT_200M = 200_000_000 ether;
+    uint256 public constant AMOUNT_500M = 500_000_000 ether;
 
     // ── Actors ───────────────────────────────────────────────
     address public owner;
@@ -129,9 +117,9 @@ contract SnipeheadMiningDecentralizedTest is Test {
     MockSHD public shd;
 
     function setUp() public {
-        owner  = address(this);
-        user1  = makeAddr("user1");
-        user2  = makeAddr("user2");
+        owner = address(this);
+        user1 = makeAddr("user1");
+        user2 = makeAddr("user2");
         funder = makeAddr("funder");
 
         // Deploy mock at the hardcoded address
@@ -140,17 +128,20 @@ contract SnipeheadMiningDecentralizedTest is Test {
         shd = MockSHD(HARDCODED_SHD);
 
         // Mint balances
-        shd.mint(owner,  1_000_000_000 ether);
-        shd.mint(user1,    600_000_000 ether);
-        shd.mint(user2,    100_000_000 ether);
-        shd.mint(funder,   500_000_000 ether);
+        shd.mint(owner, 1_000_000_000 ether);
+        shd.mint(user1, 600_000_000 ether);
+        shd.mint(user2, 100_000_000 ether);
+        shd.mint(funder, 500_000_000 ether);
 
         mining = new SnipeheadMiningDecentralized();
 
         // Approvals
-        vm.prank(user1);  shd.approve(address(mining), type(uint256).max);
-        vm.prank(user2);  shd.approve(address(mining), type(uint256).max);
-        vm.prank(funder); shd.approve(address(mining), type(uint256).max);
+        vm.prank(user1);
+        shd.approve(address(mining), type(uint256).max);
+        vm.prank(user2);
+        shd.approve(address(mining), type(uint256).max);
+        vm.prank(funder);
+        shd.approve(address(mining), type(uint256).max);
         shd.approve(address(mining), type(uint256).max);
 
         // Seed reward reserve
@@ -161,9 +152,7 @@ contract SnipeheadMiningDecentralizedTest is Test {
     // ============================================================
     // Helpers
     // ============================================================
-    function _expectedReward(uint256 blocks, uint256 staked, uint256 reserve)
-        internal pure returns (uint256)
-    {
+    function _expectedReward(uint256 blocks, uint256 staked, uint256 reserve) internal pure returns (uint256) {
         uint256 theoretical = (blocks * REWARD_RATE * staked) / 1e18;
         return theoretical > reserve ? reserve : theoretical;
     }
@@ -339,7 +328,7 @@ contract SnipeheadMiningDecentralizedTest is Test {
         mining.mine(AMOUNT_1K);
 
         assertEq(mining.totalMined(), AMOUNT_1K);
-        (uint256 minedAmount, ) = mining.userInfo(user1);
+        (uint256 minedAmount,) = mining.userInfo(user1);
         assertEq(minedAmount, AMOUNT_1K);
     }
 
@@ -374,7 +363,7 @@ contract SnipeheadMiningDecentralizedTest is Test {
         vm.prank(signer);
         mining.mineWithPermit(amount, deadline, v, r, s);
 
-        (uint256 minedAmount, ) = mining.userInfo(signer);
+        (uint256 minedAmount,) = mining.userInfo(signer);
         assertEq(minedAmount, amount);
         assertEq(mining.totalMined(), amount);
     }
@@ -388,13 +377,13 @@ contract SnipeheadMiningDecentralizedTest is Test {
 
         vm.roll(block.number + 30);
 
-        uint256 pending   = mining.pendingRewards(user1);
+        uint256 pending = mining.pendingRewards(user1);
         uint256 balBefore = shd.balanceOf(user1);
 
         vm.prank(user1);
         mining.unmine(4 ether);
 
-        (uint256 minedAmount, ) = mining.userInfo(user1);
+        (uint256 minedAmount,) = mining.userInfo(user1);
         assertEq(minedAmount, 6 ether);
         assertEq(mining.totalMined(), 6 ether);
         assertEq(shd.balanceOf(user1), balBefore + 4 ether + pending);
@@ -418,7 +407,7 @@ contract SnipeheadMiningDecentralizedTest is Test {
 
         vm.roll(block.number + 100);
 
-        uint256 pending   = mining.pendingRewards(user1);
+        uint256 pending = mining.pendingRewards(user1);
         uint256 balBefore = shd.balanceOf(user1);
 
         vm.prank(user1);
@@ -501,14 +490,14 @@ contract SnipeheadMiningDecentralizedTest is Test {
         vm.prank(user1);
         mining.mine(amount);
 
-        (uint256 mined, ) = mining.userInfo(user1);
+        (uint256 mined,) = mining.userInfo(user1);
         assertEq(mined, amount);
         assertEq(mining.totalMined(), amount);
 
         vm.prank(user1);
         mining.unmine(amount);
 
-        (mined, ) = mining.userInfo(user1);
+        (mined,) = mining.userInfo(user1);
         assertEq(mined, 0);
         assertEq(mining.totalMined(), 0);
         assertGe(shd.balanceOf(user1), balBefore); // got principal back (+ possible rewards)
@@ -540,8 +529,8 @@ contract SnipeheadMiningDecentralizedTest is Test {
         mining.updatePool();
 
         uint256 contractBal = mining.getContractSHDBalance();
-        uint256 totalMined  = mining.totalMined();
-        uint256 reserve     = mining.getRewardReserve();
+        uint256 totalMined = mining.totalMined();
+        uint256 reserve = mining.getRewardReserve();
 
         // Contract must always hold at least the mined principal + remaining reserve
         assertGe(contractBal, totalMined + reserve);

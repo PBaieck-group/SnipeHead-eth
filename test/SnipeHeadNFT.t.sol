@@ -31,7 +31,7 @@ contract SnipeHeadNFTTest is Test {
         assertEq(nft.owner(), owner);
         assertEq(nft.name(), "SnipeHead NFT");
         assertEq(nft.symbol(), "SNFT");
-        assertTrue(nft.mintingActive());          // starts active
+        assertTrue(nft.mintingActive()); // starts active
         assertEq(nft.mintPrice(), PRICE);
         assertEq(nft.totalMinted(), 0);
         assertEq(nft.MAX_SUPPLY(), 35);
@@ -263,18 +263,9 @@ contract SnipeHeadNFTTest is Test {
         vm.prank(owner);
         nft.ownerMint(owner, 12);
 
-        assertEq(
-            nft.tokenURI(1),
-            "ipfs://bafybeiaathkuhqmyfvjssilwqeri57cbe3n3ely7ga2iipqhxjtx52k4ju/001.json"
-        );
-        assertEq(
-            nft.tokenURI(9),
-            "ipfs://bafybeiaathkuhqmyfvjssilwqeri57cbe3n3ely7ga2iipqhxjtx52k4ju/009.json"
-        );
-        assertEq(
-            nft.tokenURI(12),
-            "ipfs://bafybeiaathkuhqmyfvjssilwqeri57cbe3n3ely7ga2iipqhxjtx52k4ju/012.json"
-        );
+        assertEq(nft.tokenURI(1), "ipfs://bafybeiaathkuhqmyfvjssilwqeri57cbe3n3ely7ga2iipqhxjtx52k4ju/001.json");
+        assertEq(nft.tokenURI(9), "ipfs://bafybeiaathkuhqmyfvjssilwqeri57cbe3n3ely7ga2iipqhxjtx52k4ju/009.json");
+        assertEq(nft.tokenURI(12), "ipfs://bafybeiaathkuhqmyfvjssilwqeri57cbe3n3ely7ga2iipqhxjtx52k4ju/012.json");
     }
 
     function test_TokenURI_LastToken() public {
@@ -285,10 +276,7 @@ contract SnipeHeadNFTTest is Test {
             nft.ownerMint(minter, 1);
         }
 
-        assertEq(
-            nft.tokenURI(35),
-            "ipfs://bafybeiaathkuhqmyfvjssilwqeri57cbe3n3ely7ga2iipqhxjtx52k4ju/035.json"
-        );
+        assertEq(nft.tokenURI(35), "ipfs://bafybeiaathkuhqmyfvjssilwqeri57cbe3n3ely7ga2iipqhxjtx52k4ju/035.json");
     }
 
     function test_RevertWhen_TokenURI_Nonexistent() public {

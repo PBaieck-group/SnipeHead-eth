@@ -154,7 +154,7 @@ See [`Addresses.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/s
 - Effects-before-interactions ordering used around external calls (e.g. NFT minting loop).
 - Custom errors used throughout the mining contract for gas efficiency.
 
-Found a security issue? Please report it responsibly — see the `@custom:security-contact` in [`SnipeHead.sol`](./SnipeHead.sol).
+Found a security issue? Please report it responsibly — see the `@custom:security-contact` in [`SnipeHead.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/src/SnipeHead.sol).
 
 > ⚠️ These contracts have not been externally audited. Use at your own risk.
 

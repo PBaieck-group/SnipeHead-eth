@@ -37,9 +37,9 @@ SnipeHead is an ERC-20 token (`SHD`) with a decentralized, deposit-funded mining
 
 Each core contract has a companion [Foundry](https://book.getfoundry.sh/) test suite:
 
-- [`SnipeHead_t.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/test/SnipeHead_t.sol)
-- [`SnipeheadMiningDecentralized_t.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/test/SnipeheadMiningDecentralized_t.sol)
-- [`SnipeHeadNFT_t.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/test/SnipeHeadNFT_t.sol)
+- [`SnipeHead.t.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/test/SnipeHead.t.sol)
+- [`SnipeheadMiningDecentralized.t.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/test/SnipeheadMiningDecentralized.t.sol)
+- [`SnipeHeadNFT.t.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/test/SnipeHeadNFT.t.sol)
 
 ### Front-end
 

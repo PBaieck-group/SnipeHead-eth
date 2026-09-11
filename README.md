@@ -28,22 +28,22 @@ SnipeHead is an ERC-20 token (`SHD`) with a decentralized, deposit-funded mining
 
 | Contract | File | Description |
 |---|---|---|
-| **SnipeHead** | [`SnipeHead.sol`](./SnipeHead.sol) | The `SHD` ERC-20 token (`ERC20` + `ERC20Permit`). Fixed supply of 1,000,000,000 SHD, minted entirely to the deployer/recipient at construction. |
-| **SnipeheadMiningDecentralized** | [`SnipeheadMiningDecentralized.sol`](./SnipeheadMiningDecentralized.sol) | A reentrancy-guarded staking ("mining") contract for `SHD`. Anyone can fund a reward reserve via `deposit()`; stakers `mine()` SHD and accrue rewards from that reserve at a fixed per-block rate, capped so the contract never promises more than it holds. Supports EIP-2612 `permit()` flows to skip a separate `approve()` transaction. |
-| **SnipeHeadNFT** | [`SnipeHeadNFT.sol`](./SnipeHeadNFT.sol) | A capped, 35-supply `ERC721` collection (`SNFT`) with `ERC721Enumerable`, `ERC721URIStorage`, and `ERC2981` royalties. Public mint is capped at 2 per wallet; owner reserve mints share the same hard cap. Metadata is served from IPFS. |
-| **Addresses** | [`Addresses.sol`](./Addresses.sol) | Shared library of deployed Ethereum Mainnet contract addresses, for easy reference/import across scripts and other contracts. |
+| **SnipeHead** | [`SnipeHead.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/src/SnipeHead.sol) | The `SHD` ERC-20 token (`ERC20` + `ERC20Permit`). Fixed supply of 1,000,000,000 SHD, minted entirely to the deployer/recipient at construction. |
+| **SnipeheadMiningDecentralized** | [`SnipeheadMiningDecentralized.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/src/SnipeheadMiningDecentralized.sol) | A reentrancy-guarded staking ("mining") contract for `SHD`. Anyone can fund a reward reserve via `deposit()`; stakers `mine()` SHD and accrue rewards from that reserve at a fixed per-block rate, capped so the contract never promises more than it holds. Supports EIP-2612 `permit()` flows to skip a separate `approve()` transaction. |
+| **SnipeHeadNFT** | [`SnipeHeadNFT.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/src/SnipeHeadNFT.sol) | A capped, 35-supply `ERC721` collection (`SNFT`) with `ERC721Enumerable`, `ERC721URIStorage`, and `ERC2981` royalties. Public mint is capped at 2 per wallet; owner reserve mints share the same hard cap. Metadata is served from IPFS. |
+| **Addresses** | [`Addresses.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/src/Addresses.sol) | Shared library of deployed Ethereum Mainnet contract addresses, for easy reference/import across scripts and other contracts. |
 
 ### Tests
 
 Each core contract has a companion [Foundry](https://book.getfoundry.sh/) test suite:
 
-- [`SnipeHead_t.sol`](./SnipeHead_t.sol)
-- [`SnipeheadMiningDecentralized_t.sol`](./SnipeheadMiningDecentralized_t.sol)
-- [`SnipeHeadNFT_t.sol`](./SnipeHeadNFT_t.sol)
+- [`SnipeHead_t.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/test/SnipeHead_t.sol)
+- [`SnipeheadMiningDecentralized_t.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/test/SnipeheadMiningDecentralized_t.sol)
+- [`SnipeHeadNFT_t.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/test/SnipeHeadNFT_t.sol)
 
 ### Front-end
 
-- [`index.html`](./index.html) — a lightweight, single-file dApp for interacting with the mining contract's reward pool (deposit/fund flow) directly from a browser wallet.
+- [`index.html`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/dApps/SnipeheadMining/index.html) — a lightweight, single-file dApp for interacting with the mining contract's reward pool (deposit/fund flow) directly from a browser wallet.
 
 #### 🌐 IPFS Fallback
 
@@ -94,7 +94,7 @@ forge create src/SnipeHead.sol:SnipeHead \
   --constructor-args <RECIPIENT_ADDRESS>
 ```
 
-> Repeat for `SnipeheadMiningDecentralized` and `SnipeHeadNFT` with their respective constructor arguments, then update [`Addresses.sol`](./Addresses.sol) with the deployed addresses.
+> Repeat for `SnipeheadMiningDecentralized` and `SnipeHeadNFT` with their respective constructor arguments, then update [`Addresses.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/src/Addresses.sol) with the deployed addresses.
 
 ---
 
@@ -136,7 +136,7 @@ Owner controls include `setMintPrice`, `setMintingActive`, `setDefaultRoyalty`, 
 
 ## 🔗 Deployed Addresses (Ethereum Mainnet)
 
-See [`Addresses.sol`](./Addresses.sol) for the canonical, on-chain-importable reference.
+See [`Addresses.sol`](https://github.com/PBaieck-group/SnipeHead-eth/blob/main/src/Addresses.sol) for the canonical, on-chain-importable reference.
 
 | Contract | Address |
 |---|---|

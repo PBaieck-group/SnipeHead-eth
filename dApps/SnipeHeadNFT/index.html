@@ -476,11 +476,11 @@
 <footer>
   <div class="footer-inner">
     <div class="left mono">SnipeHead NFT · <a href="https://ethereum.org" target="_blank" rel="noopener">Ethereum Mainnet · Chain ID 1</a></div>
-    <div style="margin-top:8px; font-size:11px; color:var(--muted); font-family:var(--mono); letter-spacing:.5px;">v1.0.0</div>
+    <div style="margin-top:8px; font-size:11px; color:var(--muted); font-family:var(--mono); letter-spacing:.5px;">v1.1.0</div>
     <div class="links mono">
       <a id="contractLink" href="#" target="_blank" rel="noopener">Contract</a>
       <a href="https://snipehead.xyz" target="_blank" rel="noopener">snipehead.xyz</a>
-      <a href="https://github.com/PBaieck-group/SnipeHead/tree/main/SNFT" target="_blank" rel="noopener">Source</a>
+      <a href="https://github.com/PBaieck-group/SnipeHead-eth/blob/main/src/SnipeHeadNFT.sol" target="_blank" rel="noopener">Source</a>
     </div>
   </div>
 </footer>
@@ -494,12 +494,12 @@
     <p>You'll need a Web3 wallet to make an offer on a unit. Browsing stays open either way.</p>
     <div class="wallet-options">
       <a class="wallet-option" href="https://metamask.io/download/" target="_blank" rel="noopener">
-        <span class="ico">🦊</span>
-        <span>Get MetaMask<small>MetaMask - Most widely used browser wallet</small></span>
+        <span class="ico"><img src="metamask.png" alt="MetaMask logo"></span>
+        <span>Get MetaMask<small>Mask - Most widely used browser wallet</small></span>
       </a>
       <a class="wallet-option" href="https://zkxwallet.com/" target="_blank" rel="noopener">
         <span class="ico"><img src="zkx.png" alt="ZKX Wallet logo"></span>
-        <span>Get ZKX Wallet<small>Privacy-focused, native Ethereum support</small></span>
+        <span>Get ZKX Wallet<small>Privacy focused native Ethereum support</small></span>
       </a>
       <a class="wallet-option" href="https://internetmoney.io/" target="_blank" rel="noopener">
         <span class="ico"><img src="IM.png" alt="Internet Money Wallet logo"></span>
@@ -596,6 +596,7 @@ let browserProvider = null;   // ethers BrowserProvider once wallet connects
 let signer = null;
 let writeContract = null;
 let connectedAddress = null;
+let onCorrectNetwork = true;  // becomes false once a connected wallet is confirmed on the wrong chain
 
 let chainState = {
   maxSupply: CONFIG.fallbackMaxSupply,
@@ -919,7 +920,7 @@ function renderMintArea(l, status){
       <span class="amount" id="totalPrice">${fmtEth(chainState.mintPriceWei)} ETH</span>
     </div>
     <div class="mint-action">
-      <button class="btn btn-signal" style="width:100%" id="mintBtn">Claim This Unit</button>
+      <button class="btn btn-signal" style="width:100%" id="mintBtn" ${onCorrectNetwork ? '' : 'disabled'}>${onCorrectNetwork ? 'Claim This Unit' : 'Switch to Ethereum to Claim'}</button>
     </div>
   `;
 
@@ -931,7 +932,10 @@ function renderMintArea(l, status){
   document.getElementById('qtyPlus').addEventListener('click', ()=>{
     if(currentQty<maxQty){ currentQty++; syncQtyUI(maxQty); }
   });
-  document.getElementById('mintBtn').addEventListener('click', ()=>doMint(currentQty));
+  document.getElementById('mintBtn').addEventListener('click', ()=>{
+    if(!onCorrectNetwork){ ensureCorrectNetwork(); return; }
+    doMint(currentQty);
+  });
 }
 
 function updateQtyNote(maxQty){
@@ -959,11 +963,34 @@ function showMintMsg(type, text){
 
 async function doMint(qty){
   if(!writeContract){ requestWalletConnect(); return; }
+  if(!onCorrectNetwork){ showMintMsg('error', 'Wrong network — switch to Ethereum Mainnet to claim.'); await ensureCorrectNetwork(); return; }
   const btn = document.getElementById('mintBtn');
   btn.disabled = true;
+  showMintMsg('pending', 'Checking balance…');
+
+  const value = chainState.mintPriceWei * BigInt(qty);
+
+  // Pre-flight balance check. This is what actually fixes the "missing
+  // revert data" issue: when a wallet doesn't have enough ETH, gas
+  // estimation itself can fail in an ambiguous way (different wallets/RPCs
+  // report it differently, sometimes inconsistently between attempts).
+  // Checking the balance ourselves first means the user always gets a
+  // clear, accurate message on the very first click.
+  try{
+    const balance = await browserProvider.getBalance(connectedAddress);
+    if(balance < value){
+      showMintMsg('error', `Insufficient ETH balance. This costs ${fmtEth(value)} ETH — your wallet has ${fmtEth(balance)} ETH.`);
+      btn.disabled = false;
+      return;
+    }
+  }catch(balErr){
+    console.error('Balance check failed', balErr);
+    // Don't block the user just because our pre-check failed; fall through
+    // to the normal send attempt.
+  }
+
   showMintMsg('pending', 'Confirm the transaction in your wallet…');
   try{
-    const value = chainState.mintPriceWei * BigInt(qty);
     const tx = await writeContract.mint(qty, { value });
     showMintMsg('pending', `Transaction sent. Waiting for confirmation… ${shortAddr(tx.hash)}`);
     await tx.wait();
@@ -972,7 +999,16 @@ async function doMint(qty){
     setTimeout(()=>{ listingOverlay.classList.remove('open'); }, 1400);
   }catch(err){
     console.error(err);
-    const msg = (err && err.shortMessage) ? err.shortMessage : (err && err.reason) ? err.reason : 'Transaction failed or was rejected.';
+    let msg;
+    if(err && (err.code === 'INSUFFICIENT_FUNDS' || (err.info && err.info.error && err.info.error.code === -32000))){
+      msg = 'Insufficient ETH balance to cover this mint.';
+    } else if(err && err.code === 'ACTION_REJECTED'){
+      msg = 'Transaction rejected in wallet.';
+    } else if(err && (err.shortMessage||'').toLowerCase().includes('missing revert data')){
+      msg = "Transaction couldn't be simulated — this usually means insufficient ETH balance to cover this mint.";
+    } else {
+      msg = (err && err.shortMessage) ? err.shortMessage : (err && err.reason) ? err.reason : 'Transaction failed or was rejected.';
+    }
     showMintMsg('error', msg);
     btn.disabled = false;
   }
@@ -1022,38 +1058,77 @@ async function connectWallet(){
 }
 
 async function ensureCorrectNetwork(){
-  if(!window.ethereum) return;
+  if(!window.ethereum) return false;
+  const banner = document.getElementById('wrongNetBanner');
+  const netDot = document.getElementById('netDot');
+
+  const isOnCorrectChain = async ()=>{
+    const id = await window.ethereum.request({ method:'eth_chainId' });
+    return id && id.toLowerCase() === CONFIG.chainIdHex;
+  };
+
   try{
-    const currentChainId = await window.ethereum.request({ method:'eth_chainId' });
-    if(currentChainId.toLowerCase() === CONFIG.chainIdHex){
-      document.getElementById('wrongNetBanner').classList.remove('show');
-      document.getElementById('netDot').classList.remove('off');
-      return;
+    if(await isOnCorrectChain()){
+      banner.classList.remove('show');
+      netDot.classList.remove('off');
+      onCorrectNetwork = true;
+      if(listingOverlay.classList.contains('open') && activeListingId) renderMintArea(listings.find(x=>x.id===activeListingId), statusOf(listings.find(x=>x.id===activeListingId)));
+      return true;
     }
-    document.getElementById('wrongNetBanner').classList.add('show');
-    document.getElementById('netDot').classList.add('off');
+
+    // Wrong network: ask the wallet to switch (this is what pops MetaMask's
+    // native "Switch network" prompt for the user to approve).
+    banner.classList.add('show');
+    netDot.classList.add('off');
     try{
       await window.ethereum.request({
         method:'wallet_switchEthereumChain',
         params:[{ chainId: CONFIG.chainIdHex }]
       });
     }catch(switchErr){
-      if(switchErr.code === 4902){
-        await window.ethereum.request({
-          method:'wallet_addEthereumChain',
-          params:[{
-            chainId: CONFIG.chainIdHex,
-            chainName: CONFIG.chainName,
-            nativeCurrency:{ name:'Ether', symbol: CONFIG.currencySymbol, decimals:18 },
-            rpcUrls:[CONFIG.rpcUrl],
-            blockExplorerUrls:[CONFIG.explorer]
-          }]
-        });
+      if(switchErr && switchErr.code === 4902){
+        // Chain isn't registered in the wallet yet — offer to add it, which
+        // itself prompts the user, then try switching again.
+        try{
+          await window.ethereum.request({
+            method:'wallet_addEthereumChain',
+            params:[{
+              chainId: CONFIG.chainIdHex,
+              chainName: CONFIG.chainName,
+              nativeCurrency:{ name:'Ether', symbol: CONFIG.currencySymbol, decimals:18 },
+              rpcUrls:[CONFIG.rpcUrl],
+              blockExplorerUrls:[CONFIG.explorer]
+            }]
+          });
+        }catch(addErr){
+          console.error('Add chain failed or was rejected', addErr);
+        }
+      } else {
+        // User rejected the switch, or the wallet errored some other way.
+        console.error('Switch chain failed or was rejected', switchErr);
       }
     }
-    document.getElementById('wrongNetBanner').classList.remove('show');
-    document.getElementById('netDot').classList.remove('off');
-  }catch(e){ console.error(e); }
+
+    // Re-check for real instead of assuming the switch worked — the user
+    // may have rejected the prompt, or the wallet may not support the RPC
+    // methods above at all.
+    if(await isOnCorrectChain()){
+      banner.classList.remove('show');
+      netDot.classList.remove('off');
+      onCorrectNetwork = true;
+      if(listingOverlay.classList.contains('open') && activeListingId) renderMintArea(listings.find(x=>x.id===activeListingId), statusOf(listings.find(x=>x.id===activeListingId)));
+      return true;
+    }
+
+    banner.classList.add('show');
+    netDot.classList.add('off');
+    onCorrectNetwork = false;
+    if(listingOverlay.classList.contains('open') && activeListingId) renderMintArea(listings.find(x=>x.id===activeListingId), statusOf(listings.find(x=>x.id===activeListingId)));
+    return false;
+  }catch(e){
+    console.error(e);
+    return false;
+  }
 }
 
 function updateWalletUI(){
